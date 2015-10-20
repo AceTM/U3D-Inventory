@@ -7,6 +7,7 @@ using System.Collections.Generic;
 public class InventoryManager : MonoSingleton<InventoryManager> {
 	public GameObject inventoryPanel;
 	public GameObject slotPanel;
+	public GameObject slotScrollRect;
 	public GameObject inventorySlot;
 	public GameObject inventoryItem;
 
@@ -14,7 +15,9 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 
 	public List<Item> items = new List<Item>();
 	public List<GameObject> slots = new List<GameObject>();
-	
+
+	private float edgeOffset = 5;
+
 	void Start()
 	{
 		SetupComponents();
@@ -23,12 +26,15 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 
 	public void SetupComponents()
 	{
-		inventoryPanel = GameObject.Find("InventoryPanel");
-		slotPanel = inventoryPanel.transform.FindChild("SlotPanel").gameObject;
 
-		//TODO Project dependance, this just to make sure shits don't get mess up
-		if (slotAmount <= 0 || slotAmount > 16) {
-			slotAmount = 16;
+		if (inventoryPanel == null) {
+			inventoryPanel = GameObject.Find("InventoryPanel");
+		}
+		if (slotPanel == null) {
+			slotPanel = inventoryPanel.transform.FindChild("SlotPanel").gameObject;
+		}
+		if (slotScrollRect == null) {
+			slotScrollRect = inventoryPanel.transform.FindChild("SlotRect").gameObject;
 		}
 	}
 
@@ -46,13 +52,12 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 			slotObj.name = string.Format("Slot" + i);
 			slots.Add(slotObj);
 			slots[i].GetComponent<Slot>().id = i;
-			slots[i].transform.SetParent(slotPanel.transform);	
+			slots[i].transform.SetParent(slotScrollRect.transform);	
 		}
 
 		AddItem(0, 2);
 		AddItem(1, 3);
 		AddItem(2, 1);
-		AddItem(3, 2);
 
 	}
 
@@ -88,6 +93,11 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 
 					itemObj.GetComponent<Image>().sprite = itemToAdd.Icon;
 					itemObj.name = itemToAdd.Title;
+
+					if (itemObj.GetComponent<RectTransform>().offsetMin != new Vector2(edgeOffset, edgeOffset)) {
+						itemObj.GetComponent<RectTransform>().offsetMax = new Vector2(-edgeOffset, -edgeOffset);
+						itemObj.GetComponent<RectTransform>().offsetMin = new Vector2(edgeOffset, edgeOffset);
+					}
 					break;
 				}
 			}
@@ -100,7 +110,14 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 		if (IsItemInInventory(itemToRemove)) {
 			for (int i = 0; i < items.Count; i ++) {
 				if (items[i].Id == id) {
-					ItemData data = slots[i].transform.GetChild(0).GetComponent<ItemData>();
+					ItemData data = null;
+					if (slots[i].transform.childCount == 0) {
+						data = GameObject.Find(items[id].Title).GetComponent<ItemData>();
+					}
+					else {
+						data = slots[i].transform.GetChild(0).GetComponent<ItemData>();
+					}
+
 					if (amount < data.amount) {
 						data.amount -= amount;
 						data.transform.GetChild(0).GetComponent<Text>().text = data.amount.ToString();
@@ -140,9 +157,14 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 		items[slotId] = swapperItemData.item;
 	}
 
-	public void CombineItem(int combinerId, int combineeId, int amount)
+	public void CombineItem(int combinerId, int combineeId, int resultId)
 	{
+//		GetItemAmount(ItemDatabase.Instance.FetchItemByID(combinerId));
+//		GetItemAmount(ItemDatabase.Instance.FetchItemByID(combineeId));
+		RemoveItem(combinerId, 1);
+		RemoveItem(combineeId, 1);
 
+		AddItem(resultId, 1);
 	}
 
 	public void LoadItem(int id)
@@ -181,5 +203,18 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 			}
 		}
 		return false;
+	}
+
+	public int GetItemAmount(Item item)
+	{
+		if (IsItemInInventory(item)) {
+			for (int i = 0; i < items.Count; i ++) {
+				if (items[i].Id == item.Id) {
+					Debug.Log ("Amount of item " + items[i].Title + " is " + slots[i].transform.GetChild(0).GetComponent<ItemData>().amount);
+					return slots[i].transform.GetChild(0).GetComponent<ItemData>().amount;
+				}
+			}
+		}
+		return 0;
 	}
 }

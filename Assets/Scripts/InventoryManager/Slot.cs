@@ -11,6 +11,10 @@ public class Slot : MonoBehaviour, IDropHandler {
 	{
 		//OnDrop finishes before End Drag
 		ItemData droppedItem = eventData.pointerDrag.GetComponent<ItemData>();
+		if (droppedItem == null) {
+			return;
+		}
+
 		if (InventoryManager.Instance.items[id].Id == -1) {
 			InventoryManager.Instance.MoveItem(droppedItem, id);
 		}
@@ -19,16 +23,6 @@ public class Slot : MonoBehaviour, IDropHandler {
 			if(this.transform.childCount > 0) {
 				Transform swapItem = this.transform.GetChild(0);
 				ItemData swapItemData = swapItem.GetComponent<ItemData>();
-
-				if (droppedItem.item.Combineable && droppedItem.item.CombineId1 == swapItemData.item.Id) {
-					if (droppedItem.item.CombineResult == swapItemData.item.CombineResult) {
-						Debug.Log ("Combineable item is " + droppedItem.item.Title + " and this slot item is " + swapItemData.item.Title);
-						//TODO This needs serious refactoring
-						if (InventoryManager.Instance.IsItemInInventory(ItemDatabase.Instance.FetchItemByID(swapItemData.item.CombineResult))) {
-							Debug.Log ("It exists!");
-						}
-					}
-				}
 
 				swapItemData.slot = droppedItem.slot;
 				InventoryManager.Instance.SwapItem(droppedItem, swapItem.GetComponent<ItemData>(), id);
@@ -39,6 +33,12 @@ public class Slot : MonoBehaviour, IDropHandler {
 				droppedItem.slot = id;
 				droppedItem.transform.SetParent(this.transform);
 				droppedItem.transform.position = this.transform.position;
+
+				if (droppedItem.item.Combineable && droppedItem.item.CombineId1 == swapItemData.item.Id) {
+					if (droppedItem.item.CombineResult == swapItemData.item.CombineResult) {
+						InventoryManager.Instance.CombineItem(droppedItem.item.Id, swapItemData.item.Id, droppedItem.item.CombineResult);					
+					}
+				}
 			}
 		}
 	}

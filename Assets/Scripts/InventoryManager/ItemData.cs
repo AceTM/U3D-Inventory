@@ -13,6 +13,7 @@ public class ItemData : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
 
 	public void OnBeginDrag(PointerEventData eventData)
 	{
+		//TODO Something is wrong here, the Item is off, I don't have time to fix it yet
 		if (item != null) {
 			this.transform.SetParent(this.transform.parent.parent);
 //			this.transform.position = eventData.position;
@@ -39,9 +40,11 @@ public class ItemData : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
 
 	public void OnEndDrag(PointerEventData eventData)
 	{
-		this.transform.SetParent(InventoryManager.Instance.slots[slot].transform);
-		this.transform.position = InventoryManager.Instance.slots[slot].transform.position;
-		GetComponent<CanvasGroup>().blocksRaycasts = true;
+		if (item != null) {
+			this.transform.SetParent(InventoryManager.Instance.slots[slot].transform);
+			this.transform.position = InventoryManager.Instance.slots[slot].transform.position;
+			GetComponent<CanvasGroup>().blocksRaycasts = true;
+		}
 	}
 
 	public void OnPointerEnter(PointerEventData eventData)

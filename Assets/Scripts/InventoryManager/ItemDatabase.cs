@@ -17,7 +17,6 @@ public class ItemDatabase : MonoSingleton<ItemDatabase>
 	public Item FetchItemByID(int id)
 	{
 		for (int i = 0; i < itemData.Count; i++) {
-
 			if (itemDatabase[i].Id == id) {
 				return itemDatabase[i];
 			}
