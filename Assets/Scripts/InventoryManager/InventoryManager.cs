@@ -11,10 +11,19 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 	public GameObject inventorySlot;
 	public GameObject inventoryItem;
 
-	public int slotAmount;
+//	public GameObject equipmentPanel;
+//	public GameObject equipmentSlotPanel;
+//	public GameObject equipmentSlotScrollRect;
+//	public GameObject equipmentSlot;
+//	public GameObject equipmentItem;
+
+	public int inventorySlotAmount;
+//	public int equipmentSlotAmount;
 
 	public List<Item> items = new List<Item>();
 	public List<GameObject> slots = new List<GameObject>();
+
+//	public List<GameObject> equips = new List<GameObject>();
 
 	private float edgeOffset = 5;
 
@@ -45,7 +54,7 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 		}
 
 		//TODO This add items depend on slot amount, maybe it should just add available in inv items
-		for (int i = 0; i < slotAmount; i++) {
+		for (int i = 0; i < inventorySlotAmount; i++) {
 			items.Add(new Item());
 
 			GameObject slotObj = Instantiate(inventorySlot);
@@ -64,6 +73,9 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 	public void AddItem(int id, int amount)
 	{
 		Item itemToAdd = ItemDatabase.Instance.FetchItemByID(id);
+		if (itemToAdd == null) {
+			return;
+		}
 
 		if (itemToAdd.Stackable && IsItemInInventory(itemToAdd)) {
 			for (int i = 0; i < items.Count; i ++) {
@@ -88,7 +100,7 @@ public class InventoryManager : MonoSingleton<InventoryManager> {
 					itemData.slot = i;
 
 					itemObj.transform.SetParent(slots[i].transform);
-					itemObj.transform.position = Vector2.zero;
+					itemObj.transform.position = Vector3.zero;
 					itemObj.transform.GetChild(0).GetComponent<Text>().text = itemData.amount.ToString();
 
 					itemObj.GetComponent<Image>().sprite = itemToAdd.Icon;

@@ -59,6 +59,9 @@
      <Compile Include="Assets\Scripts\MessageManager\MessageManager.cs" />
      <Compile Include="Assets\Scripts\Models\CSVReader.cs" />
      <Compile Include="Assets\Scripts\Models\DialogMessage.cs" />
+     <Compile Include="Assets\Scripts\PatternLockManager\DrawRectangle.cs" />
+     <Compile Include="Assets\Scripts\PatternLockManager\PatternLockManager.cs" />
+     <Compile Include="Assets\Scripts\PatternLockManager\PatternPoint.cs" />
      <Compile Include="Assets\Scripts\System\Singleton.cs" />
      <Compile Include="Assets\Scripts\Test\TestMessage.cs" />
  <Reference Include="UnityEngine.UI">
