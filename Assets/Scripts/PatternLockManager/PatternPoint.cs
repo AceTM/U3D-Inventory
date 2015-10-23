@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 using System.Collections;
@@ -10,9 +11,10 @@ public class PatternPoint : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
 	public void OnBeginDrag(PointerEventData eventData)
 	{
-		Debug.Log ("Begining Drag object " + pointId);
-		PatternLockManager.Instance.StartDrag(pointId);
+		//TODO A mess, do something about this, call only once
+		PatternLockManager.Instance.StartDrag(this.pointId);
 		PatternLockManager.Instance.DrawAtPoint(transform.position);
+		PatternLockManager.Instance.MarkPoint(this.pointId);
 		isSelected = true;
 	}
 
@@ -23,10 +25,6 @@ public class PatternPoint : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 	
 	public void OnEndDrag(PointerEventData eventData)
 	{
-		foreach(int number in PatternLockManager.Instance.patternNumbers) {
-			Debug.Log ("End point " + number);
-		}
-
 		PatternLockManager.Instance.ClearPoints();
 		PatternLockManager.Instance.ClearLines();
 	}
@@ -39,13 +37,14 @@ public class PatternPoint : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 	public void OnPointerEnter(PointerEventData eventData)
 	{
 		if (eventData.pointerDrag != null && isSelected == false) {
-			Debug.Log ("Oh crap, point object " + eventData.pointerDrag.GetComponent<PatternPoint>().pointId + " entered on object " + pointId);
-			Debug.Log ("And position of this point is " + transform.position);
+			//TODO A mess, do something about this
 			Vector3 endPoint = new Vector3(transform.position.x, transform.position.y, 0);
-			PatternLockManager.Instance.EnterPointDrag(pointId);
+			PatternLockManager.Instance.EnterPointDrag(this.pointId);
 			PatternLockManager.Instance.DrawLine(endPoint);
 			PatternLockManager.Instance.SetStartPoint(endPoint);
 			PatternLockManager.Instance.DrawNextLine();
+			PatternLockManager.Instance.MarkPoint(this.pointId);
+			PatternLockManager.Instance.IsUnsignedPointExistBetweenLine(eventData.pointerDrag.GetComponent<PatternPoint>().pointPosition, this.pointPosition);
 			isSelected = true;
 		}
 	}
