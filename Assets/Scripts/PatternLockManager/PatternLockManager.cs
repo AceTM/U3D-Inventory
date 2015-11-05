@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
@@ -54,37 +55,55 @@ public class PatternLockManager : MonoSingleton<PatternLockManager> {
 		}
 	}
 
-	public bool IsUnsignedPointExistBetweenLine(Vector2 startPoint, Vector2 endPoint)
+	public void IsUnsignedPointExistBetweenLine(Vector2 startPoint, Vector2 endPoint)
 	{
 		//TODO Someone help me refactor this shit
-		int largerX = 0;
-		int smallerX = 0;
-		int largerY = 0;
-		int smallerY = 0;
-		if (startPoint.x != endPoint.x && startPoint.y != endPoint.y) {
-			if (startPoint.x != endPoint.x) {
-				if (startPoint.x > endPoint.x) {
-					largerX = (int)startPoint.x;
-					smallerX = (int)endPoint.x;
-				}
-				else {
-					largerX = (int)endPoint.x;
-					smallerX = (int)startPoint.x;
-				}
-			}
-			else if (startPoint.y != startPoint.y) {
-				if (startPoint.y > endPoint.y) {
-					largerY = (int)startPoint.y;
-					smallerY = (int)endPoint.y;
-				}
-				else {
-					largerY = (int)endPoint.y;
-					smallerY = (int)startPoint.y;
-				}
-			}
+		Debug.Log("start point " + startPoint + " end point " + endPoint);
+		if ((startPoint.x - endPoint.x == startPoint.y - endPoint.y) && Mathf.Abs(endPoint.x - startPoint.x) > 1) {
+			MarkBetweenPoints(startPoint, endPoint, new Vector2(1, 1), true);
+			Debug.Log ("Cross 1");
 		}
+		else if ((startPoint.x + startPoint.y == endPoint.x + endPoint.y) && Mathf.Abs(endPoint.x - startPoint.x) > 1) {
+			MarkBetweenPoints(startPoint, endPoint, new Vector2(1, -1), true);
+			Debug.Log ("Cross 2");
+		}
+		else if (startPoint.y == endPoint.y && startPoint.x != endPoint.x && Mathf.Abs(endPoint.x - startPoint.x) > 1) {
+			MarkBetweenPoints(startPoint, endPoint, new Vector2(1, 0), true);
+			Debug.Log ("Horizontal");
+		}
+		else if (startPoint.x == endPoint.x && startPoint.y != endPoint.y && Mathf.Abs(endPoint.y - startPoint.y) > 1) {
+			MarkBetweenPoints(startPoint, endPoint, new Vector2(0, 1), false);
+			Debug.Log ("Vertical");
+		}
+	}
 
-		return false;
+	public void MarkBetweenPoints(Vector2 startPoint, Vector2 endPoint, Vector2 subsPoint, bool isX)
+	{
+		Vector2 furtherPoint = Vector2.zero;
+		Vector2 closerPoint = Vector2.zero;
+
+		int start = (isX) ? (int)startPoint.x : (int)startPoint.y;
+		int end = (isX) ? (int)endPoint.x : (int)endPoint.y;
+
+		if (start > end) {
+			furtherPoint = startPoint;
+			closerPoint = endPoint;
+		}
+		else {
+			furtherPoint = endPoint;
+			closerPoint = startPoint;
+		}
+		Vector2 pointBetween = furtherPoint - subsPoint;
+
+		int startNum = (isX) ? (int)furtherPoint.x - 1 : (int)furtherPoint.y - 1;
+		int untilNum = (isX) ? (int)closerPoint.x : (int)closerPoint.y;
+
+		for(int i = startNum; i > untilNum; i--) {
+			if (!GetPointByCoordination(pointBetween).GetComponent<PatternPoint>().isSelected) {
+				MarkPoint(GetPointByCoordination(pointBetween).GetComponent<PatternPoint>().pointId);
+			}
+			pointBetween -= subsPoint;
+		}  
 	}
 
 	public List<GameObject> GetObjectsBetweenPoints(Vector2 startPoint, Vector3 endPoint) 
@@ -99,6 +118,19 @@ public class PatternLockManager : MonoSingleton<PatternLockManager> {
 		}
 		foreach(GameObject pointObject in pointList) {
 			if (pointObject.GetComponent<PatternPoint>().pointPosition == coordinate) {
+				return pointObject;
+			}
+		}
+		return null;
+	}
+
+	public GameObject GetPointById(int id)
+	{
+		if (pointList == null || pointList.Count == 0) {
+			return null;
+		}
+		foreach(GameObject pointObject in pointList) {
+			if (pointObject.GetComponent<PatternPoint>().pointId == id) {
 				return pointObject;
 			}
 		}
@@ -159,12 +191,13 @@ public class PatternLockManager : MonoSingleton<PatternLockManager> {
 	public void DrawLine(Vector3 pointB)
 	{
 		Vector3 differenceVector = pointB - startLinePoint;
-		
-		presentRectTransform.sizeDelta = new Vector2( differenceVector.magnitude, lineWidth);
-		presentRectTransform.pivot = new Vector2(0, 0.5f);
-		presentRectTransform.position = startLinePoint;
-		float angle = Mathf.Atan2(differenceVector.y, differenceVector.x) * Mathf.Rad2Deg;
-		presentRectTransform.rotation = Quaternion.Euler(0,0, angle);
+		if (presentRectTransform) {
+			presentRectTransform.sizeDelta = new Vector2( differenceVector.magnitude, lineWidth);
+			presentRectTransform.pivot = new Vector2(0, 0.5f);
+			presentRectTransform.position = startLinePoint;
+			float angle = Mathf.Atan2(differenceVector.y, differenceVector.x) * Mathf.Rad2Deg;
+			presentRectTransform.rotation = Quaternion.Euler(0,0, angle);
+		}
 	}
 
 	public void ClearLines()
@@ -181,6 +214,7 @@ public class PatternLockManager : MonoSingleton<PatternLockManager> {
 	public void MarkPoint(int id) {
 		if (pointList != null || pointList.Count != 0) {
 			pointList[id].GetComponent<Image>().color = new Color32(64, 132, 242, 100);
+			pointList[id].GetComponent<PatternPoint>().isSelected = true;
 		}
 	}
 }

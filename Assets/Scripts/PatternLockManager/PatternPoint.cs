@@ -37,15 +37,16 @@ public class PatternPoint : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 	public void OnPointerEnter(PointerEventData eventData)
 	{
 		if (eventData.pointerDrag != null && isSelected == false) {
-			//TODO A mess, do something about this
+			//TODO A terrible fucking mess, do something about this
 			Vector3 endPoint = new Vector3(transform.position.x, transform.position.y, 0);
-			PatternLockManager.Instance.EnterPointDrag(this.pointId);
-			PatternLockManager.Instance.DrawLine(endPoint);
-			PatternLockManager.Instance.SetStartPoint(endPoint);
-			PatternLockManager.Instance.DrawNextLine();
-			PatternLockManager.Instance.MarkPoint(this.pointId);
-			PatternLockManager.Instance.IsUnsignedPointExistBetweenLine(eventData.pointerDrag.GetComponent<PatternPoint>().pointPosition, this.pointPosition);
-			isSelected = true;
+			PatternLockManager pattern = PatternLockManager.Instance;
+			pattern.EnterPointDrag(this.pointId);
+			pattern.DrawLine(endPoint);
+			pattern.SetStartPoint(endPoint);
+			pattern.DrawNextLine();
+			pattern.MarkPoint(this.pointId);
+			//TODO Especially this shit here
+			pattern.IsUnsignedPointExistBetweenLine(pattern.GetPointById(pattern.patternNumbers[pattern.patternNumbers.Count - 2]).GetComponent<PatternPoint>().pointPosition, this.pointPosition);
 		}
 	}
 	
